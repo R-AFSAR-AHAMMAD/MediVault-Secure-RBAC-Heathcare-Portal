@@ -2,16 +2,33 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+};
+
 const register = async (req, res) => {
   const { name, email, password, age, gender } = req.body;
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
   
   try {
-    const user = await User.create({ name, email, password: hashedPassword, age, gender, role: 'patient' });
-    res.status(201).json({ message: 'Registered successfully' });
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: 'User already exists' });
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    
+    const user = await User.create({ 
+      name, email, password: hashedPassword, age, gender, role: 'patient' 
+    });
+
+    // FIX: Return user info + token so frontend can auto-login
+    res.status(201).json({
+      _id: user.id,
+      name: user.name,
+      role: user.role,
+      token: generateToken(user._id)
+    });
   } catch (error) {
-    res.status(400).json({ message: 'User already exists' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -24,7 +41,7 @@ const login = async (req, res) => {
       _id: user.id,
       name: user.name,
       role: user.role,
-      token: jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' })
+      token: generateToken(user._id)
     });
   } else {
     res.status(401).json({ message: 'Invalid credentials' });
