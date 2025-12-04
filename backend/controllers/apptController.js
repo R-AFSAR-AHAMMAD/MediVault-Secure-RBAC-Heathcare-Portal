@@ -20,12 +20,21 @@ const getHistory = async (req, res) => {
 };
 
 const treatPatient = async (req, res) => {
-  await Appointment.findByIdAndUpdate(req.params.id, {
-    diagnosis: req.body.diagnosis,
-    prescription: req.body.prescription,
-    status: 'treated'
-  });
-  res.json({ message: 'Treated' });
+  const appointment = await Appointment.findById(req.params.id);
+
+  if (!appointment) {
+    return res.status(404).json({ message: 'Appointment not found' });
+  }
+if (appointment.doctorId.toString() !== req.user.id && req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Not authorized to treat this patient' });
+  }
+
+  appointment.diagnosis = req.body.diagnosis;
+  appointment.prescription = req.body.prescription;
+  appointment.status = 'treated';
+  
+  const updatedAppointment = await appointment.save();
+  res.json(updatedAppointment);
 };
 
 module.exports = { bookAppt, getHistory, treatPatient };
