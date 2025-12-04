@@ -3,15 +3,56 @@ import api from '../api';
 
 export default function DoctorPanel() {
   const [appts, setAppts] = useState([]);
-  const [rx, setRx] = useState({ diagnosis: '', prescription: '' });
+  const [loading, setLoading] = useState(true);
+  // State is now an object mapped by ID: { "apptId1": { diagnosis: "...", prescription: "..." } }
+  const [forms, setForms] = useState({});
 
   useEffect(() => { 
-    api.get('/appointments')
-      .then(r => setAppts(r.data))
-      .catch(err => console.error("Failed to load appointments", err));
+    fetchAppointments();
   }, []);
 
-  const treat = (id) => api.put(`/treat/${id}`, rx).then(() => window.location.reload());
+  const fetchAppointments = () => {
+    api.get('/appointments')
+      .then(r => {
+        setAppts(r.data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load appointments", err);
+        setLoading(false);
+      });
+  };
+
+  const handleInputChange = (id, field, value) => {
+    setForms(prev => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [field]: value
+      }
+    }));
+  };
+
+  const treat = async (id) => {
+    const treatmentData = forms[id];
+    if (!treatmentData?.diagnosis || !treatmentData?.prescription) {
+      alert("Please fill in both Diagnosis and Prescription");
+      return;
+    }
+
+    try {
+      await api.put(`/treat/${id}`, treatmentData);
+      alert('Treatment Submitted successfully');
+      // Update local UI without reloading page
+      setAppts(prev => prev.map(a => 
+        a._id === id ? { ...a, status: 'treated', ...treatmentData } : a
+      ));
+    } catch (error) {
+      alert("Failed to submit treatment");
+    }
+  };
+
+  if (loading) return <div className="p-5 text-center">Loading patient records...</div>;
 
   return (
     <div className="p-5">
@@ -39,8 +80,18 @@ export default function DoctorPanel() {
               {a.status === 'pending' ? (
                 <div className="mt-4 bg-gray-50 p-3 rounded">
                   <div className="grid grid-cols-2 gap-2 mb-2">
-                    <input className="border p-2 rounded" placeholder="Diagnosis" onChange={e => setRx({...rx, diagnosis: e.target.value})} />
-                    <input className="border p-2 rounded" placeholder="Prescription" onChange={e => setRx({...rx, prescription: e.target.value})} />
+                    <input 
+                      className="border p-2 rounded" 
+                      placeholder="Diagnosis" 
+                      value={forms[a._id]?.diagnosis || ''}
+                      onChange={e => handleInputChange(a._id, 'diagnosis', e.target.value)} 
+                    />
+                    <input 
+                      className="border p-2 rounded" 
+                      placeholder="Prescription" 
+                      value={forms[a._id]?.prescription || ''}
+                      onChange={e => handleInputChange(a._id, 'prescription', e.target.value)} 
+                    />
                   </div>
                   <button onClick={() => treat(a._id)} className="bg-teal-600 text-white px-4 py-2 rounded w-full hover:bg-teal-700 transition">Submit Treatment</button>
                 </div>
