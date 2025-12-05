@@ -5,6 +5,7 @@ import AdminPanel from './components/AdminPanel';
 import DoctorPanel from './components/DoctorPanel';
 import PatientPanel from './components/PatientPanel';
 import api from './api';
+import { LayoutDashboard, LogOut, User, Stethoscope, Activity } from 'lucide-react'; // Assuming you have lucide-react, if not remove icons
 
 // --- 1. Login/Register Page Component ---
 const LoginPage = () => {
@@ -32,37 +33,58 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex h-screen justify-center items-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-96">
-        <h1 className="text-2xl font-bold mb-6 text-center text-teal-700">MediVault</h1>
+    <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-teal-700 flex items-center justify-center gap-2">
+            <Activity className="w-8 h-8" /> MediVault
+          </h1>
+          <p className="text-slate-500 text-sm mt-2">Secure Healthcare Portal</p>
+        </div>
         
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <>
-              <input name="name" required className="border w-full p-2 rounded" placeholder="Full Name" onChange={handleChange} />
-              <div className="flex gap-2">
-                <input name="age" type="number" required className="border w-1/2 p-2 rounded" placeholder="Age" onChange={handleChange} />
-                <select name="gender" className="border w-1/2 p-2 rounded" onChange={handleChange}>
-                  <option>Male</option>
-                  <option>Female</option>
-                </select>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600 uppercase">Full Name</label>
+                <input name="name" required className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition" placeholder="John Doe" onChange={handleChange} />
+              </div>
+              <div className="flex gap-4">
+                <div className="w-1/2 space-y-1">
+                   <label className="text-xs font-semibold text-slate-600 uppercase">Age</label>
+                   <input name="age" type="number" required className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none" placeholder="25" onChange={handleChange} />
+                </div>
+                <div className="w-1/2 space-y-1">
+                   <label className="text-xs font-semibold text-slate-600 uppercase">Gender</label>
+                   <select name="gender" className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none bg-white" onChange={handleChange}>
+                    <option>Male</option>
+                    <option>Female</option>
+                  </select>
+                </div>
               </div>
             </>
           )}
           
-          <input name="email" type="email" required className="border w-full p-2 rounded" placeholder="Email" onChange={handleChange} />
-          <input name="password" type="password" required className="border w-full p-2 rounded" placeholder="Password" onChange={handleChange} />
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-600 uppercase">Email Address</label>
+            <input name="email" type="email" required className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none transition" placeholder="name@example.com" onChange={handleChange} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-600 uppercase">Password</label>
+            <input name="password" type="password" required className="w-full p-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-teal-500 outline-none transition" placeholder="••••••••" onChange={handleChange} />
+          </div>
           
-          <button type="submit" className="bg-teal-600 text-white w-full p-2 rounded font-bold hover:bg-teal-700 transition">
-            {isRegister ? 'Register Patient' : 'Login'}
+          <button type="submit" className="w-full py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all transform active:scale-95 mt-4">
+            {isRegister ? 'Create Account' : 'Sign In'}
           </button>
         </form>
 
-        <p className="text-sm text-center mt-4 cursor-pointer text-blue-600 hover:underline" onClick={() => setIsRegister(!isRegister)}>
-          {isRegister ? 'Already have an account? Login' : 'New Patient? Create Account'}
-        </p>
-        
-        {!isRegister && <p className="text-xs text-gray-400 mt-4 text-center">Admin: admin@medivault.com / admin</p>}
+        <div className="mt-6 text-center border-t border-slate-100 pt-4">
+          <p className="text-sm text-slate-600 hover:text-teal-600 cursor-pointer font-medium transition" onClick={() => setIsRegister(!isRegister)}>
+            {isRegister ? 'Already have an account? Login' : 'New Patient? Create Account'}
+          </p>
+          {!isRegister && <p className="text-xs text-slate-400 mt-4 bg-slate-50 p-2 rounded">Demo Admin: admin@medivault.com / admin</p>}
+        </div>
       </div>
     </div>
   );
@@ -79,18 +101,34 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div>
-      <nav className="bg-teal-700 p-4 text-white flex justify-between items-center shadow-md">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-xl cursor-pointer" onClick={() => navigate('/')}>MediVault</span>
-          <span className="text-xs bg-teal-800 px-2 py-1 rounded uppercase tracking-wider">{user?.role}</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm opacity-90">Hello, {user?.name}</span>
-          <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition">Logout</button>
+    <div className="min-h-screen bg-slate-50">
+      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+              <div className="bg-teal-600 text-white p-1.5 rounded-lg">
+                <Activity size={20} />
+              </div>
+              <span className="font-bold text-xl text-slate-800 tracking-tight">MediVault</span>
+              <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider ml-2">{user?.role}</span>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-slate-600">
+                <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center text-teal-700">
+                   <User size={16} />
+                </div>
+                <span className="text-sm font-medium hidden sm:block">{user?.name}</span>
+              </div>
+              <button onClick={handleLogout} className="flex items-center gap-2 text-slate-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors text-sm font-medium">
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
+          </div>
         </div>
       </nav>
-      <main className="max-w-6xl mx-auto mt-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
     </div>
@@ -98,7 +136,6 @@ const Layout = ({ children }) => {
 };
 
 // --- 3. Protected Route Wrapper ---
-// Ensures users can only access routes allowed for their role
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useContext(AuthContext);
   
@@ -108,35 +145,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return <Layout>{children}</Layout>;
 };
 
-// --- 4. Main App Component with Routing ---
+// --- 4. Main App Component ---
 function AppRoutes() {
   const { user } = useContext(AuthContext);
 
   return (
     <Routes>
-      {/* Public Route */}
       <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
-
-      {/* Protected Routes */}
-      <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <AdminPanel />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/doctor" element={
-        <ProtectedRoute allowedRoles={['doctor']}>
-          <DoctorPanel />
-        </ProtectedRoute>
-      } />
-      
-      <Route path="/patient" element={
-        <ProtectedRoute allowedRoles={['patient']}>
-          <PatientPanel />
-        </ProtectedRoute>
-      } />
-
-      {/* Default Redirect */}
+      <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
+      <Route path="/doctor" element={<ProtectedRoute allowedRoles={['doctor']}><DoctorPanel /></ProtectedRoute>} />
+      <Route path="/patient" element={<ProtectedRoute allowedRoles={['patient']}><PatientPanel /></ProtectedRoute>} />
       <Route path="/" element={
         user ? (
           user.role === 'admin' ? <Navigate to="/admin" /> :
