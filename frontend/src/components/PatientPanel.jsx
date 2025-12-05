@@ -14,7 +14,8 @@ export default function PatientPanel() {
   const submit = () => api.post('/book', book).then(() => window.location.reload());
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 px-4">
+
       {/* Booking Column */}
       <div className="lg:col-span-1 space-y-6">
         <h2 className="text-2xl font-bold text-slate-800">Patient Portal</h2>
